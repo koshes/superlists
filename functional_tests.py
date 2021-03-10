@@ -41,17 +41,24 @@ class NewVisitorTest(unittest.TestCase):
 
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
-        self.assertTrue(
-            any(row.text == '1: simple test request' for row in rows)
-        )
+        self.assertIn('1: simple test request', [row.text for row in rows])
 
         # Текстовое поле по-прежнему приглашает добавить еще один элемент. Ввод "another test request"
-        self.fail('Закончить тест')
-        # Страница обновляется и теперь показывает оба элемента списка
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('another test request')
+        inputbox.send_keys(Keys.ENTER)
+        time.sleep(1)
 
+        # Страница обновляется и теперь показывает оба элемента списка
+        table = self.browser.find_element_by_id('id_list_table')
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn('1: simple test request', [row.text for row in rows])
+        self.assertIn(
+            '2: another test request', [row.text for row in rows]
+        )
         # Проверяем сохранил ли сайт этот список. Видим, что сайт сгенерировал уникальный  url-адрес - об этом выводится
         # небольшой текст с объяснениями
-
+        self.fail('Закончить тест')
         # Заходим на данный url и видим, что список по-прежнему там
 
 
