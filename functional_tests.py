@@ -15,7 +15,7 @@ class NewVisitorTest(unittest.TestCase):
         '''Демонтаж'''
         self.browser.quit()
 
-    def check_for_in_list_table(self, row_text):
+    def check_for_row_in_list_table(self, row_text):
         '''подтверждение строки в таблице списка'''
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
@@ -44,7 +44,7 @@ class NewVisitorTest(unittest.TestCase):
         # При нажатии enter страница обновляется и теперь она содержит "simple test request" в качестве элемента списка
         inputbox.send_keys(Keys.ENTER)
         time.sleep(1)
-        self.check_for_in_list_table('1: simple test request')
+        self.check_for_row_in_list_table('1: simple test request')
 
         # Текстовое поле по-прежнему приглашает добавить еще один элемент. Ввод "another test request"
         inputbox = self.browser.find_element_by_id('id_new_item')
@@ -53,8 +53,8 @@ class NewVisitorTest(unittest.TestCase):
         time.sleep(1)
 
         # Страница обновляется и теперь показывает оба элемента списка
-        self.check_for_in_list_table('1: simple test request')
-        self.check_for_in_list_table('2: another test request')
+        self.check_for_row_in_list_table('1: simple test request')
+        self.check_for_row_in_list_table('2: another test request')
         # Проверяем сохранил ли сайт этот список. Видим, что сайт сгенерировал уникальный  url-адрес - об этом выводится
         # небольшой текст с объяснениями
         self.fail('Закончить тест')

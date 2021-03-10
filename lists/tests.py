@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 from lists.views import home_page
 from lists.models import Item
 
+
 class HomePageTest(TestCase):
     '''тест домашней страницы'''
 
@@ -16,9 +17,31 @@ class HomePageTest(TestCase):
 
     def test_can_save_a_POST_request(self):
         '''тест: можно сохранить post-запрос'''
+        self.client.post('/', data={'item_text': 'A new list item'})
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'A new list item')
+
+    def test_redirects_after_POST(self):
+        '''тест: переадресует после post-запроса'''
         response = self.client.post('/', data={'item_text': 'A new list item'})
-        self.assertIn('A new list item', response.content.decode())
-        self.assertTemplateUsed(response, 'lists/home.html')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/')
+
+    def test_displays_all_list_items(self):
+        '''тест: отображаются все элементы списка '''
+        Item.objects.create(text='ПЕРВЫЙ ЭЛЕМЕНТ')
+        Item.objects.create(text='ВТОРОЙ ЭЛЕМЕНТ')
+
+        response = self.client.get('/')
+
+        self.assertIn('ПЕРВЫЙ ЭЛЕМЕНТ', response.content.decode())
+        self.assertIn('ВТОРОЙ ЭЛЕМЕНТ', response.content.decode())
+
+    def test_only_saves_items_when_necessary(self):
+        '''тест: сохраняет элементы только когда нужно'''
+        self.client.get('/')
+        self.assertEqual(Item.objects.count(), 0)
 
 
 class ItemModelTest(TestCase):
