@@ -65,8 +65,7 @@ class NewVisitorTest(LiveServerTestCase):
         # Страница обновляется и теперь показывает оба элемента списка
         self.wait_for_row_in_list_table('2: another test request')
         self.wait_for_row_in_list_table('1: simple test request')
-    
-    
+
     def test_multiple_user_can_start_lists_at_different_urls(self):
         '''тест: многочисленные пользователи могут начать списки по разным url'''
         # Начинаем новый список
@@ -105,7 +104,7 @@ class NewVisitorTest(LiveServerTestCase):
         self.assertNotEqual(second_user_list_url, user_list_url)
 
         # Проверяем следы первого пользователя
-        page_text = self.browser.find_element_by_name('body').text
+        page_text = self.browser.find_element_by_tag_name('body').text
         self.assertNotIn('simple test request', page_text)
         self.assertIn('find mind', page_text)
 
