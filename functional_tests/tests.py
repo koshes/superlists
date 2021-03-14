@@ -33,8 +33,8 @@ class NewVisitorTest(LiveServerTestCase):
                     raise e
                 time.sleep(0.5)
 
-    def test_can_start_a_list_and_retrieve_it_later(self):
-        '''тест: можно ли начать список и получить его позже'''
+    def test_can_start_a_list_for_one_user(self):
+        '''тест: можно начать список для одного пользователя'''
 
         # Посещение домашней страницы приложения
         self.browser.get(self.live_server_url)
@@ -65,7 +65,51 @@ class NewVisitorTest(LiveServerTestCase):
         # Страница обновляется и теперь показывает оба элемента списка
         self.wait_for_row_in_list_table('2: another test request')
         self.wait_for_row_in_list_table('1: simple test request')
-        # Проверяем сохранил ли сайт этот список. Видим, что сайт сгенерировал уникальный  url-адрес - об этом выводится
-        # небольшой текст с объяснениями
+    
+    
+    def test_multiple_user_can_start_lists_at_different_urls(self):
+        '''тест: многочисленные пользователи могут начать списки по разным url'''
+        # Начинаем новый список
+        self.browser.get(self.live_server_url)
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('simple test request')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: simple test request')
+
+        # Видим, что список имеет унимальный url
+        user_list_url = self.browser.current_url
+        self.assertRegex(user_list_url, 'lists/.+')
+
+        # Другой пользователь (ВТОРОЙ) заходит на сайт
+
+        ## Мы используем новый сеанс браузера, тем самым обеспечивая, чтобы никакая
+        ## информация от ПЕРВОГО пользователя не прошла через данные куки и прочие.
+        self.browser.quit()
+        self.browser = webdriver.Firefox()
+
+        # ВТОРОЙ посещает домашнюю страницу. Нет никаких признаков списка ПЕРВОГО
+        self.browser.get(self.live_server_url)
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('simple test request', page_text)
+        self.assertNotIn('another test request', page_text)
+
+        # ВТОРОЙ начинает новый список, вводя новый элемент
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('find mind')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: find mind')
+
+        # ВТОРОЙ получает уникальный url
+        second_user_list_url = self.browser.current_url
+        self.assertRegex(second_user_list_url, 'lists/.+')
+        self.assertNotEqual(second_user_list_url, user_list_url)
+
+        # Проверяем следы первого пользователя
+        page_text = self.browser.find_element_by_name('body').text
+        self.assertNotIn('simple test request', page_text)
+        self.assertIn('find mind', page_text)
+
+        # Сеанс закончен
+
         self.fail('Закончить тест')
-        # Заходим на данный url и видим, что список по-прежнему там
+ 
