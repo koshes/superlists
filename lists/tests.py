@@ -26,17 +26,7 @@ class HomePageTest(TestCase):
         '''тест: переадресует после post-запроса'''
         response = self.client.post('/', data={'item_text': 'A new list item'})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
-
-    def test_displays_all_list_items(self):
-        '''тест: отображаются все элементы списка '''
-        Item.objects.create(text='ПЕРВЫЙ ЭЛЕМЕНТ')
-        Item.objects.create(text='ВТОРОЙ ЭЛЕМЕНТ')
-
-        response = self.client.get('/')
-
-        self.assertIn('ПЕРВЫЙ ЭЛЕМЕНТ', response.content.decode())
-        self.assertIn('ВТОРОЙ ЭЛЕМЕНТ', response.content.decode())
+        self.assertEqual(response['location'], '/lists/GREATEST_LIST/')
 
     def test_only_saves_items_when_necessary(self):
         '''тест: сохраняет элементы только когда нужно'''
@@ -64,3 +54,22 @@ class ItemModelTest(TestCase):
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, 'Первый элемент списка')
         self.assertEqual(second_saved_item.text, 'Второй элемент списка')
+
+
+class ListViewTest(TestCase):
+    '''тест вьюхи списка'''
+
+    def test_uses_list_template(self):
+        '''тест: используется шаблон списка'''
+        response = self.client.get('/lists/GREATEST_LIST/')
+        self.assertTemplateUsed(response, 'lists/list.html')
+
+    def test_diplays_all_items(self):
+        '''тест: отображаются все элементы списка'''
+        Item.objects.create(text='ПЕРВЫЙ ЭЛЕМЕНТ')
+        Item.objects.create(text='ВТОРОЙ ЭЛЕМЕНТ')
+
+        response = self.client.get('/lists/GREATEST_LIST/')
+
+        self.assertContains(response, 'ПЕРВЫЙ ЭЛЕМЕНТ')
+        self.assertContains(response, 'ВТОРОЙ ЭЛЕМЕНТ')
